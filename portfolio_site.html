@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kmoney | Personal Investment Portfolio</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --navy: #1F3864;
+    --navy-mid: #2F5496;
+    --gold: #C9A84C;
+    --gold-light: #F0DFA0;
+    --white: #ffffff;
+    --gray-50: #F8F9FA;
+    --gray-100: #F2F2F2;
+    --gray-200: #E5E7EB;
+    --gray-400: #9CA3AF;
+    --gray-600: #4B5563;
+    --gray-800: #1F2937;
+    --green: #16A34A;
+    --red: #DC2626;
+    --radius: 12px;
+    --shadow: 0 4px 20px rgba(31,56,100,0.10);
+    --shadow-sm: 0 2px 8px rgba(31,56,100,0.07);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    line-height: 1.6;
+  }
+
+  /* ── NAV ─────────────────────────────────────────────── */
+  nav {
+    background: var(--navy);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+  .nav-brand {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.5px;
+  }
+  .nav-brand span { color: var(--gold); }
+  .nav-links { display: flex; gap: 0.25rem; }
+  .nav-links button {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.72);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .nav-links button:hover, .nav-links button.active {
+    background: rgba(255,255,255,0.12);
+    color: var(--white);
+  }
+  .nav-badge {
+    font-size: 0.7rem;
+    background: var(--gold);
+    color: var(--navy);
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 700;
+    margin-left: 0.5rem;
+  }
+
+  /* ── LAYOUT ──────────────────────────────────────────── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* ── HERO ────────────────────────────────────────────── */
+  .hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--white);
+    padding: 3.5rem 2rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    border-radius: 50%;
+  }
+  .hero-eyebrow {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  .hero h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+  }
+  .hero h1 span { color: var(--gold); }
+  .hero-sub {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.72);
+    max-width: 520px;
+    margin: 0 auto 2rem;
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat-val {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--gold);
+  }
+  .hero-stat-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 2px;
+  }
+
+  /* ── CARDS ───────────────────────────────────────────── */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    border: 1px solid var(--gray-200);
+  }
+  .card-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    color: var(--navy-mid);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 14px;
+    background: var(--gold);
+    border-radius: 2px;
+  }
+
+  /* ── GRID LAYOUTS ────────────────────────────────────── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+  @media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 1.7rem; }
+  }
+
+  /* ── METRIC CHIPS ────────────────────────────────────── */
+  .metric-chip {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+  }
+  .metric-chip-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--navy);
+    display: block;
+  }
+  .metric-chip-val.up { color: var(--green); }
+  .metric-chip-val.down { color: var(--red); }
+  .metric-chip-label {
+    font-size: 0.72rem;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 3px;
+    display: block;
+  }
+
+  /* ── SECTION HEADER ──────────────────────────────────── */
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .section-sub {
+    font-size: 0.82rem;
+    color: var(--gray-400);
+  }
+
+  /* ── ALLOCATION CHART ────────────────────────────────── */
+  .chart-wrap {
+    height: 220px;
+    position: relative;
+  }
+
+  /* ── HOLDINGS TABLE ──────────────────────────────────── */
+  .holdings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .holdings-table th {
+    background: var(--navy);
+    color: var(--white);
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+  }
+  .holdings-table th:first-child { border-radius: 8px 0 0 0; }
+  .holdings-table th:last-child { border-radius: 0 8px 0 0; }
+  .holdings-table td {
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: middle;
+  }
+  .holdings-table tr:hover td { background: var(--gray-50); }
+  .holdings-table tr.sleeve-core td:first-child { border-left: 3px solid var(--navy); }
+  .holdings-table tr.sleeve-sat td:first-child { border-left: 3px solid var(--gold); }
+  .ticker-badge {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--navy);
+    background: rgba(31,56,100,0.08);
+    padding: 3px 8px;
+    border-radius: 5px;
+    display: inline-block;
+  }
+  .sleeve-tag {
+    font-size: 0.68rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .sleeve-tag.core { background: rgba(31,56,100,0.1); color: var(--navy); }
+  .sleeve-tag.sat  { background: rgba(201,168,76,0.2); color: #8B6914; }
+  .placeholder-row td { color: var(--gray-400); font-style: italic; }
+
+  /* ── THESIS CARDS ────────────────────────────────────── */
+  .thesis-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s;
+  }
+  .thesis-card:hover { box-shadow: var(--shadow); }
+  .thesis-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .thesis-ticker {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--white);
+  }
+  .thesis-name {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.65);
+    margin-top: 2px;
+  }
+  .thesis-sleeve-tag {
+    font-size: 0.68rem;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.15);
+    color: var(--white);
+  }
+  .thesis-body { padding: 1.1rem 1.25rem; }
+  .thesis-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+  }
+  .thesis-label {
+    font-weight: 700;
+    color: var(--navy);
+    min-width: 80px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-top: 1px;
+  }
+  .thesis-text { color: var(--gray-600); flex: 1; }
+  .thesis-divider {
+    border: none;
+    border-top: 1px solid var(--gray-100);
+    margin: 0.75rem 0;
+  }
+  .thesis-risks {
+    background: rgba(220,38,38,0.05);
+    border: 1px solid rgba(220,38,38,0.12);
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--red);
+  }
+  .thesis-risks strong { display: block; margin-bottom: 2px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ── PLACEHOLDER THESIS ──────────────────────────────── */
+  .thesis-placeholder {
+    background: var(--gray-50);
+    border: 2px dashed var(--gray-200);
+    border-radius: var(--radius);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    color: var(--gray-400);
+  }
+  .thesis-placeholder-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .thesis-placeholder p { font-size: 0.875rem; }
+
+  /* ── MARKET BRIEF ────────────────────────────────────── */
+  .brief-date {
+    font-size: 0.78rem;
+    color: var(--gray-400);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .brief-date span {
+    background: var(--gold-light);
+    color: #8B6914;
+    font-weight: 700;
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .brief-section-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--navy);
+    margin: 1.25rem 0 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .brief-section-title::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+  }
+  .brief-item {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .brief-item:last-child { border-bottom: none; }
+  .brief-bullet {
+    color: var(--gold);
+    font-weight: 700;
+    min-width: 10px;
+    margin-top: 2px;
+  }
+  .brief-item strong { color: var(--gray-800); }
+
+  .index-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .index-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+  .index-card-name { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); }
+  .index-card-val { font-size: 1rem; font-weight: 700; color: var(--navy); margin: 2px 0; }
+  .index-card-chg { font-size: 0.78rem; font-weight: 600; }
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+
+  /* ── PHILOSOPHY ──────────────────────────────────────── */
+  .philosophy-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--gray-100);
+    align-items: flex-start;
+  }
+  .philosophy-item:last-child { border-bottom: none; }
+  .philosophy-num {
+    width: 32px; height: 32px;
+    min-width: 32px;
+    background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+  .philosophy-title { font-weight: 700; color: var(--navy); font-size: 0.95rem; }
+  .philosophy-text { font-size: 0.875rem; color: var(--gray-600); margin-top: 3px; }
+
+  /* ── ABOUT ───────────────────────────────────────────── */
+  .about-hero {
+    background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .about-hero h2 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+  .about-hero h2 span { color: var(--gold); }
+  .about-hero p { color: rgba(255,255,255,0.75); font-size: 0.95rem; max-width: 480px; margin: 0 auto; }
+
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+  .tag {
+    background: rgba(31,56,100,0.08);
+    color: var(--navy);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(31,56,100,0.15);
+  }
+
+  .edit-note {
+    background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.06));
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    font-size: 0.82rem;
+    color: #8B6914;
+    margin-top: 1rem;
+  }
+  .edit-note strong { display: block; margin-bottom: 0.25rem; }
+
+  .mb-1 { margin-bottom: 1rem; }
+  .mb-15 { margin-bottom: 1.5rem; }
+  .mb-2 { margin-bottom: 2rem; }
+  .mt-15 { margin-top: 1.5rem; }
+  .col-span-2 { grid-column: span 2; }
+</style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ─────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-brand">k<span>money</span> | Investments</div>
+  <div class="nav-links">
+    <button class="active" onclick="showPage('home')">Overview</button>
+    <button onclick="showPage('brief')">Market Brief <span class="nav-badge">WEEKLY</span></button>
+    <button onclick="showPage('portfolio')">Portfolio</button>
+    <button onclick="showPage('thesis')">Thesis</button>
+    <button onclick="showPage('about')">About</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: HOME / OVERVIEW                                           -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-eyebrow">Roth IRA · Long-Term Investing · Wealth Management</div>
+    <h1>My <span>Investment</span> Portfolio</h1>
+    <p class="hero-sub">A documented, thesis-driven portfolio built to compound over decades — and to demonstrate a genuine investment process to WM recruiters.</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val">$1,000</div>
+        <div class="hero-stat-label">Starting Capital</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">Roth IRA</div>
+        <div class="hero-stat-label">Account Type</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">60 / 40</div>
+        <div class="hero-stat-label">Core / Satellite</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">40+ yrs</div>
+        <div class="hero-stat-label">Time Horizon</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Quick market snapshot -->
+    <div class="section-header mb-1">
+      <div class="section-title">Market Snapshot</div>
+      <div class="section-sub">Week of June 30, 2026</div>
+    </div>
+    <div class="index-grid mb-2">
+      <div class="index-card">
+        <div class="index-card-name">S&P 500</div>
+        <div class="index-card-val">~5,820</div>
+        <div class="index-card-chg down">−2.0% MTD · 3% off ATH</div>
+      </div>
+      <div class="index-card">
+        <div class="index-card-name">Nasdaq</div>
+        <div class="index-card-val">—</div>
+        <div class="index-card-chg down">−6.0% MTD · Tech rotation</div>
+      </div>
+      <div class="index-card">
+        <div class="index-card-name">Dow Jones</div>
+        <div class="index-card-val">—</div>
+        <div class="index-card-chg up">+1.0% MTD · Defensive strength</div>
+      </div>
+    </div>
+
+    <div class="grid-2 mb-2">
+      <!-- Allocation chart -->
+      <div class="card">
+        <div class="card-title">Portfolio Allocation</div>
+        <div class="chart-wrap">
+          <canvas id="allocChart"></canvas>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:1rem;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;">
+            <span style="width:12px;height:12px;border-radius:3px;background:#1F3864;display:inline-block;"></span>
+            <span style="color:var(--gray-600)">Core ETFs — 60%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;">
+            <span style="width:12px;height:12px;border-radius:3px;background:#C9A84C;display:inline-block;"></span>
+            <span style="color:var(--gray-600)">Satellite Stocks — 40%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- My philosophy summary -->
+      <div class="card">
+        <div class="card-title">Investment Philosophy</div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">1</div>
+          <div>
+            <div class="philosophy-title">Long-term compounding</div>
+            <div class="philosophy-text">40+ year horizon in a Roth IRA means taxes are eliminated. Time is the most powerful variable — not stock picking.</div>
+          </div>
+        </div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">2</div>
+          <div>
+            <div class="philosophy-title">Core + Satellite discipline</div>
+            <div class="philosophy-text">60% in low-cost, broad-market ETFs for index returns. 40% in 2–3 high-conviction names with documented theses.</div>
+          </div>
+        </div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">3</div>
+          <div>
+            <div class="philosophy-title">Process over prediction</div>
+            <div class="philosophy-text">Every position has a written thesis, a bull case, a bear case, and exit criteria — reviewed quarterly.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Holdings snapshot table -->
+    <div class="card">
+      <div class="card-title">Current Holdings</div>
+      <table class="holdings-table">
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Name</th>
+            <th>Sleeve</th>
+            <th>Allocation</th>
+            <th>Entry Price</th>
+            <th>Thesis in One Line</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="sleeve-core">
+            <td><span class="ticker-badge">VTI</span></td>
+            <td>Vanguard Total Stock Market ETF</td>
+            <td><span class="sleeve-tag core">Core</span></td>
+            <td>35%</td>
+            <td>$367.12</td>
+            <td>Own the entire US market at 0.03% expense ratio — capture equity risk premium across all cap sizes.</td>
+          </tr>
+          <tr class="sleeve-core">
+            <td><span class="ticker-badge">VOO</span></td>
+            <td>Vanguard S&P 500 ETF</td>
+            <td><span class="sleeve-tag core">Core</span></td>
+            <td>25%</td>
+            <td>$678.25</td>
+            <td>S&P 500 exposure — over 90% of active managers underperform over 15 years; own the index instead.</td>
+          </tr>
+          <tr class="sleeve-sat">
+            <td><span class="ticker-badge">—</span></td>
+            <td style="color:var(--gray-400);font-style:italic;">Your pick — add a thesis</td>
+            <td><span class="sleeve-tag sat">Satellite</span></td>
+            <td>~15%</td>
+            <td>—</td>
+            <td style="color:var(--gray-400);font-style:italic;">Document your reasoning in the Thesis tab →</td>
+          </tr>
+          <tr class="sleeve-sat">
+            <td><span class="ticker-badge">—</span></td>
+            <td style="color:var(--gray-400);font-style:italic;">Your pick — add a thesis</td>
+            <td><span class="sleeve-tag sat">Satellite</span></td>
+            <td>~13%</td>
+            <td>—</td>
+            <td style="color:var(--gray-400);font-style:italic;">Document your reasoning in the Thesis tab →</td>
+          </tr>
+          <tr class="sleeve-sat">
+            <td><span class="ticker-badge">—</span></td>
+            <td style="color:var(--gray-400);font-style:italic;">Your pick — add a thesis</td>
+            <td><span class="sleeve-tag sat">Satellite</span></td>
+            <td>~12%</td>
+            <td>—</td>
+            <td style="color:var(--gray-400);font-style:italic;">Document your reasoning in the Thesis tab →</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: MARKET BRIEF                                              -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div id="page-brief" class="page">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title">Weekly Market Brief</div>
+      <div class="section-sub">Updated manually each Monday</div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <!-- This week's brief -->
+        <div class="card mb-15">
+          <div class="brief-date">
+            June 30, 2026 &nbsp;·&nbsp; <span>Week 26</span>
+          </div>
+
+          <div class="brief-section-title">Index Performance — June</div>
+          <div class="index-grid" style="grid-template-columns:1fr 1fr 1fr;">
+            <div class="index-card">
+              <div class="index-card-name">S&P 500</div>
+              <div class="index-card-val">MTD</div>
+              <div class="index-card-chg down">−2.0%</div>
+            </div>
+            <div class="index-card">
+              <div class="index-card-name">Nasdaq</div>
+              <div class="index-card-val">MTD</div>
+              <div class="index-card-chg down">−6.0%</div>
+            </div>
+            <div class="index-card">
+              <div class="index-card-name">Dow</div>
+              <div class="index-card-val">MTD</div>
+              <div class="index-card-chg up">+1.0%</div>
+            </div>
+          </div>
+
+          <div class="brief-section-title">Macro Themes</div>
+          <div class="brief-item">
+            <span class="brief-bullet">›</span>
+            <span><strong>Tech rotation underway.</strong> Nasdaq's −6% June suggests quarter-end rebalancing by pensions and sovereign wealth funds rotating out of mega-cap tech. This is normal seasonal behavior, not a fundamental shift.</span>
+          </div>
+          <div class="brief-item">
+            <span class="brief-bullet">›</span>
+            <span><strong>Non-tech strength.</strong> Dow's +1% MTD reflects resilience in industrials, financials, and energy — sectors WM clients are often overweight. Worth monitoring for defensive positioning signals.</span>
+          </div>
+          <div class="brief-item">
+            <span class="brief-bullet">›</span>
+            <span><strong>S&P 500 only 3% off all-time highs</strong> despite the June volatility — the pullback looks like consolidation rather than a trend reversal. Broader market health remains intact.</span>
+          </div>
+
+          <div class="brief-section-title">Key Event This Week</div>
+          <div class="brief-item">
+            <span class="brief-bullet">›</span>
+            <span><strong>June Jobs Report (Thursday).</strong> Consensus expects ~150k nonfarm payrolls. A hot number could revive rate-hike concerns and pressure equities; a soft number may accelerate rate-cut expectations. Watching closely for WM client conversation impact.</span>
+          </div>
+
+          <div class="brief-section-title">WM Talking Point of the Week</div>
+          <div class="brief-item">
+            <span class="brief-bullet">›</span>
+            <span><strong>Quarter-end rebalancing creates opportunity.</strong> When large institutions mechanically sell winners (tech) and buy laggards (value/defensives), it creates temporary mispricings. Long-term investors with a written IPS shouldn't react emotionally to this noise — they should stay the course or add on weakness.</span>
+          </div>
+        </div>
+
+        <div class="edit-note">
+          <strong>📝 How to update this brief weekly</strong>
+          Ask Claude: "Update my market brief for the week of [date]" and paste in any news or data. Claude will rewrite this section with the new content.
+        </div>
+      </div>
+
+      <div>
+        <!-- How to write a market brief -->
+        <div class="card mb-15">
+          <div class="card-title">Brief Writing Framework</div>
+          <div class="philosophy-item">
+            <div class="philosophy-num">1</div>
+            <div>
+              <div class="philosophy-title">Index performance (3–4 lines)</div>
+              <div class="philosophy-text">S&P, Nasdaq, Dow, 10-yr Treasury yield. Facts only, no opinion.</div>
+            </div>
+          </div>
+          <div class="philosophy-item">
+            <div class="philosophy-num">2</div>
+            <div>
+              <div class="philosophy-title">2–3 macro themes</div>
+              <div class="philosophy-text">What's driving markets? Rate expectations, earnings, geopolitics, sector rotation?</div>
+            </div>
+          </div>
+          <div class="philosophy-item">
+            <div class="philosophy-num">3</div>
+            <div>
+              <div class="philosophy-title">Key event ahead</div>
+              <div class="philosophy-text">What data point or event will markets watch this week? Fed, jobs, CPI, earnings?</div>
+            </div>
+          </div>
+          <div class="philosophy-item">
+            <div class="philosophy-num">4</div>
+            <div>
+              <div class="philosophy-title">WM-specific insight</div>
+              <div class="philosophy-text">What does this mean for a wealth management client? Portfolio impact, rebalancing, tax-loss harvesting window?</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">ETF Prices — Core Holdings</div>
+          <div class="brief-item">
+            <span class="brief-bullet">›</span>
+            <span><strong>VTI</strong> — $367.12 &nbsp;<span class="up">+1.35%</span>&nbsp; (June 29, 2026)</span>
+          </div>
+          <div class="brief-item">
+            <span class="brief-bullet">›</span>
+            <span><strong>VOO</strong> — $678.25 &nbsp;<span class="up">+1.19%</span>&nbsp; (June 29, 2026)</span>
+          </div>
+          <div class="brief-item">
+            <span class="brief-bullet">›</span>
+            <span style="color:var(--gray-400);font-style:italic;">Satellite positions — add your tickers here once you select them</span>
+          </div>
+          <div class="edit-note" style="margin-top:1rem;">
+            <strong>💡 Interview tip</strong>
+            Being able to quote current ETF prices and explain recent performance is a simple but powerful differentiator in WM interviews. Most candidates can't do it.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: PORTFOLIO                                                 -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div id="page-portfolio" class="page">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title">Portfolio Strategy</div>
+      <div class="section-sub">Roth IRA · $1,000 starting capital · Opened July 2026</div>
+    </div>
+
+    <div class="grid-4 mb-2">
+      <div class="metric-chip">
+        <span class="metric-chip-val">$1,000</span>
+        <span class="metric-chip-label">Invested</span>
+      </div>
+      <div class="metric-chip">
+        <span class="metric-chip-val">$600</span>
+        <span class="metric-chip-label">Core (ETFs)</span>
+      </div>
+      <div class="metric-chip">
+        <span class="metric-chip-val">$400</span>
+        <span class="metric-chip-label">Satellite (Stocks)</span>
+      </div>
+      <div class="metric-chip">
+        <span class="metric-chip-val">0%</span>
+        <span class="metric-chip-label">Tax on Gains</span>
+      </div>
+    </div>
+
+    <div class="grid-2 mb-2">
+      <div class="card">
+        <div class="card-title">Why a Roth IRA?</div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">✓</div>
+          <div>
+            <div class="philosophy-title">Tax-free compounding</div>
+            <div class="philosophy-text">All growth and withdrawals after 59½ are completely tax-free. At age 18-19, I'm in the lowest tax bracket I'll ever be — the best time to fund a Roth.</div>
+          </div>
+        </div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">✓</div>
+          <div>
+            <div class="philosophy-title">40+ year horizon</div>
+            <div class="philosophy-text">At 7% average real return, $1,000 today becomes ~$15,000 at retirement. Every dollar I add compounds tax-free for decades.</div>
+          </div>
+        </div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">✓</div>
+          <div>
+            <div class="philosophy-title">Forces long-term thinking</div>
+            <div class="philosophy-text">The account structure discourages speculation and encourages the buy-and-hold discipline central to sound wealth management.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Core Sleeve — ETFs ($600)</div>
+        <div class="brief-item">
+          <span class="brief-bullet">›</span>
+          <span><strong>VTI (~$350)</strong> — Vanguard Total Stock Market. Owns ~3,900 US stocks including small, mid, and large cap. 0.03% expense ratio. Maximizes diversification.</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-bullet">›</span>
+          <span><strong>VOO (~$250)</strong> — S&P 500 tilt. Slightly more large-cap concentration; historically outperforms total market over many periods due to mega-cap quality bias.</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-bullet">›</span>
+          <span><strong>Why both?</strong> VTI + VOO have ~75% overlap but the combination weights me toward the strongest US companies while maintaining total-market breadth.</span>
+        </div>
+        <div class="edit-note" style="margin-top:1rem;">
+          <strong>💡 Note</strong> — Use fractional shares on Fidelity or Schwab to invest exact dollar amounts below the share price.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Satellite Sleeve — Individual Stocks ($400 across 2–3 picks)</div>
+      <div class="grid-3">
+        <div style="padding:1rem;background:var(--gray-50);border-radius:10px;border:1px dashed var(--gray-200);">
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--gold);font-weight:700;margin-bottom:0.5rem;">Suggestion: Industry play</div>
+          <div style="font-weight:700;color:var(--navy);margin-bottom:0.25rem;">BLK — BlackRock</div>
+          <div style="font-size:0.82rem;color:var(--gray-600);">World's largest asset manager ($10T+ AUM). Owning BLK is owning the infrastructure of wealth management itself — iShares ETFs, Aladdin risk platform. Shows you understand the industry you want to enter.</div>
+        </div>
+        <div style="padding:1rem;background:var(--gray-50);border-radius:10px;border:1px dashed var(--gray-200);">
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--gold);font-weight:700;margin-bottom:0.5rem;">Suggestion: Value/philosophy</div>
+          <div style="font-weight:700;color:var(--navy);margin-bottom:0.25rem;">BRK.B — Berkshire Hathaway</div>
+          <div style="font-size:0.82rem;color:var(--gray-600);">Buffett's holding company — a masterclass in capital allocation. BRK.B trades ~$500 (use fractional). Holding this forces you to think like a long-term value investor, which WM firms respect deeply.</div>
+        </div>
+        <div style="padding:1rem;background:var(--gray-50);border-radius:10px;border:1px dashed var(--gray-200);">
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--gold);font-weight:700;margin-bottom:0.5rem;">Your choice</div>
+          <div style="font-weight:700;color:var(--navy);margin-bottom:0.25rem;">[YOUR PICK]</div>
+          <div style="font-size:0.82rem;color:var(--gray-600);">Pick a sector or company you genuinely understand and care about. Authenticity in interviews beats a formulaic answer every time. Go to the Thesis tab and document it.</div>
+        </div>
+      </div>
+      <div class="edit-note mt-15">
+        <strong>⚡ These are starting-point ideas, not financial advice.</strong> Do your own research. The most important thing is that you can articulate WHY you own each position — that's what WM interviewers actually care about.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: THESIS                                                    -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div id="page-thesis" class="page">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title">Investment Theses</div>
+      <div class="section-sub">One written thesis per satellite position — reviewed quarterly</div>
+    </div>
+
+    <div class="grid-2 mb-2">
+      <!-- Core ETF thesis (brief) -->
+      <div class="thesis-card">
+        <div class="thesis-header">
+          <div>
+            <div class="thesis-ticker">VTI + VOO</div>
+            <div class="thesis-name">Vanguard Total Market + S&P 500 ETF</div>
+          </div>
+          <div class="thesis-sleeve-tag">Core</div>
+        </div>
+        <div class="thesis-body">
+          <div class="thesis-row">
+            <div class="thesis-label">Thesis</div>
+            <div class="thesis-text">Passive index investing in a Roth IRA is the highest-expected-value strategy for a 40-year horizon. Over 90% of active managers underperform their benchmark after fees over 15-year periods (SPIVA data). I am not smarter than the market in aggregate — but I can guarantee I capture its return at near-zero cost.</div>
+          </div>
+          <hr class="thesis-divider">
+          <div class="thesis-row">
+            <div class="thesis-label">Bull Case</div>
+            <div class="thesis-text">US equities compound at historical 7–10% real rate. By retirement, $600 becomes $9,000–$25,000+ at zero tax.</div>
+          </div>
+          <div class="thesis-row">
+            <div class="thesis-label">Catalyst</div>
+            <div class="thesis-text">Time. No catalyst needed — this is a structural position.</div>
+          </div>
+          <div class="thesis-row">
+            <div class="thesis-label">Exit Criteria</div>
+            <div class="thesis-text">Never, unless a better risk-adjusted passive vehicle emerges or my investment philosophy fundamentally changes.</div>
+          </div>
+          <div class="thesis-risks">
+            <strong>Bear Case / Risk</strong>
+            Prolonged US equity underperformance vs. international markets. Mitigant: VTI already includes some international exposure via US multinationals; may add ex-US ETF (VXUS) later.
+          </div>
+        </div>
+      </div>
+
+      <!-- Placeholder 1 -->
+      <div class="thesis-card">
+        <div class="thesis-header" style="background: linear-gradient(135deg, #8B6914 0%, var(--gold) 100%);">
+          <div>
+            <div class="thesis-ticker">[YOUR PICK 1]</div>
+            <div class="thesis-name">Add your first satellite position</div>
+          </div>
+          <div class="thesis-sleeve-tag">Satellite</div>
+        </div>
+        <div class="thesis-body">
+          <div class="thesis-row">
+            <div class="thesis-label">Thesis</div>
+            <div class="thesis-text" style="color:var(--gray-400);font-style:italic;">Why do you own this? What does the market misunderstand? What's your edge? Write 2–4 sentences. Be specific.</div>
+          </div>
+          <hr class="thesis-divider">
+          <div class="thesis-row">
+            <div class="thesis-label">Bull Case</div>
+            <div class="thesis-text" style="color:var(--gray-400);font-style:italic;">What has to be true for this to work over 3–5 years?</div>
+          </div>
+          <div class="thesis-row">
+            <div class="thesis-label">Catalyst</div>
+            <div class="thesis-text" style="color:var(--gray-400);font-style:italic;">What event or data point will prove or disprove your thesis?</div>
+          </div>
+          <div class="thesis-row">
+            <div class="thesis-label">Exit Criteria</div>
+            <div class="thesis-text" style="color:var(--gray-400);font-style:italic;">I will sell if: [thesis broken / price target / better opportunity]</div>
+          </div>
+          <div class="thesis-risks" style="background:var(--gray-50);border-color:var(--gray-200);color:var(--gray-400);">
+            <strong style="color:var(--gray-400);">Bear Case / Risk</strong>
+            What could go wrong? How do you think about it?
+          </div>
+        </div>
+      </div>
+
+      <!-- Placeholder 2 -->
+      <div class="thesis-card">
+        <div class="thesis-header" style="background: linear-gradient(135deg, #8B6914 0%, var(--gold) 100%);">
+          <div>
+            <div class="thesis-ticker">[YOUR PICK 2]</div>
+            <div class="thesis-name">Add your second satellite position</div>
+          </div>
+          <div class="thesis-sleeve-tag">Satellite</div>
+        </div>
+        <div class="thesis-body">
+          <div class="thesis-row">
+            <div class="thesis-label">Thesis</div>
+            <div class="thesis-text" style="color:var(--gray-400);font-style:italic;">Why do you own this? What's your edge?</div>
+          </div>
+          <hr class="thesis-divider">
+          <div class="thesis-row">
+            <div class="thesis-label">Bull Case</div>
+            <div class="thesis-text" style="color:var(--gray-400);font-style:italic;">What has to be true for this to work?</div>
+          </div>
+          <div class="thesis-row">
+            <div class="thesis-label">Catalyst</div>
+            <div class="thesis-text" style="color:var(--gray-400);font-style:italic;">What event will prove or disprove your thesis?</div>
+          </div>
+          <div class="thesis-row">
+            <div class="thesis-label">Exit Criteria</div>
+            <div class="thesis-text" style="color:var(--gray-400);font-style:italic;">I will sell if…</div>
+          </div>
+          <div class="thesis-risks" style="background:var(--gray-50);border-color:var(--gray-200);color:var(--gray-400);">
+            <strong style="color:var(--gray-400);">Bear Case / Risk</strong>
+            What could go wrong?
+          </div>
+        </div>
+      </div>
+
+      <!-- How to build a thesis -->
+      <div class="card">
+        <div class="card-title">How to Build a Strong Thesis</div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">1</div>
+          <div>
+            <div class="philosophy-title">Read the 10-K & latest earnings call</div>
+            <div class="philosophy-text">Know the business model, revenue drivers, and what management is actually saying. Ask Claude to summarize any 10-K.</div>
+          </div>
+        </div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">2</div>
+          <div>
+            <div class="philosophy-title">Identify what the market is missing</div>
+            <div class="philosophy-text">Good theses aren't "great company" — they're "the market underestimates X because of Y, and here's when it will be proven wrong."</div>
+          </div>
+        </div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">3</div>
+          <div>
+            <div class="philosophy-title">Steel-man the bear case</div>
+            <div class="philosophy-text">The best investors know the risks better than the bulls. Being able to articulate the bear case and explain why you own it anyway = intellectual honesty.</div>
+          </div>
+        </div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">4</div>
+          <div>
+            <div class="philosophy-title">Write it down, date it</div>
+            <div class="philosophy-text">A dated thesis you can walk into an interview with is orders of magnitude more impressive than verbal stock picks. This is your proof of process.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: ABOUT                                                     -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div id="page-about" class="page">
+  <div class="container">
+    <div class="about-hero">
+      <h2>Hi, I'm <span>kmoney</span></h2>
+      <p>Undergrad investor building real financial knowledge from day one — with a Roth IRA, a documented investment process, and a genuine interest in wealth management.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Why Wealth Management</div>
+        <div style="font-size:0.9rem;color:var(--gray-600);line-height:1.8;">
+          <p style="margin-bottom:0.75rem;">Wealth management sits at the intersection of financial analysis, relationship management, and long-term thinking. It's not about short-term trading — it's about helping clients build and preserve wealth across generations.</p>
+          <p style="margin-bottom:0.75rem;">I started this portfolio to do more than study finance in a classroom. I wanted to put real money behind real convictions and build the discipline that WM clients expect their advisors to have.</p>
+          <p>Every week I write a market brief. Every position has a documented thesis. This site is the proof.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">What I'm Building</div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">📈</div>
+          <div>
+            <div class="philosophy-title">Roth IRA Portfolio</div>
+            <div class="philosophy-text">Real money, documented process, 40-year horizon. Started July 2026 with $1,000.</div>
+          </div>
+        </div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">📰</div>
+          <div>
+            <div class="philosophy-title">Weekly Market Brief</div>
+            <div class="philosophy-text">Published every Monday — macro themes, key events, WM-relevant insights.</div>
+          </div>
+        </div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">📝</div>
+          <div>
+            <div class="philosophy-title">Investment Theses</div>
+            <div class="philosophy-text">Written, dated, quarterly-reviewed thesis for every satellite position.</div>
+          </div>
+        </div>
+        <div class="philosophy-item">
+          <div class="philosophy-num">🎯</div>
+          <div>
+            <div class="philosophy-title">WM Internship Recruiting</div>
+            <div class="philosophy-text">Targeting summer 2027/2028 internships at firms like Morgan Stanley, Merrill Lynch, Raymond James, CAPTRUST, and boutique RIAs.</div>
+          </div>
+        </div>
+        <div class="tag-cloud">
+          <span class="tag">Wealth Management</span>
+          <span class="tag">Long-Term Investing</span>
+          <span class="tag">Roth IRA</span>
+          <span class="tag">Market Analysis</span>
+          <span class="tag">ETF Strategy</span>
+          <span class="tag">Fundamental Research</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Page navigation ──────────────────────────────────────────────
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    event.target.classList.add('active');
+    if (id === 'home' || id === 'portfolio') renderChart();
+  }
+
+  // ── Allocation donut chart ───────────────────────────────────────
+  let chartInstance = null;
+  function renderChart() {
+    const canvas = document.getElementById('allocChart');
+    if (!canvas) return;
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    chartInstance = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['VTI (Core)', 'VOO (Core)', 'Satellite Pick 1', 'Satellite Pick 2', 'Satellite Pick 3'],
+        datasets: [{
+          data: [35, 25, 15, 13, 12],
+          backgroundColor: ['#1F3864', '#2F5496', '#C9A84C', '#D4B060', '#DFBF75'],
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.parsed}%`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Init chart on load
+  window.addEventListener('load', () => { renderChart(); });
+</script>
+</body>
+</html>
